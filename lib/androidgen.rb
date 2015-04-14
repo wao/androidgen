@@ -53,9 +53,9 @@ module Androidgen
         #todo:support-v4.version
 
         def initialize
-            @android_sdk_groupid = "com.google.android"
-            @android_version = "4.1.1.4"
-            @target_sdk_version=16
+            @android_sdk_groupid = "android"
+            @android_version = "5.0.1_r2"
+            @target_sdk_version=21
             @minimal_sdk_version=8
             @androidannotations_groupid="org.androidannotations"
             @androidannotations_version="3.2"
@@ -104,7 +104,6 @@ module Androidgen
             #end
 
             args.each do |file_path|
-                puts file_path
                 @@template_files << JavaTmpl.new(base_path, file_path)
             end
         end

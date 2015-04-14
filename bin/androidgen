@@ -1,3 +1,42 @@
 #!/usr/bin/env ruby
+#
 
+require 'rubygems'
+require 'bundler/setup'
 
+require 'main'
+require 'androidgen'
+
+Main do
+    def initialize
+        @project = Androidgen::Project.new
+    end
+
+    option('package-name', 'p') do
+        arity 1
+        required
+        argument :required
+        cast :string
+        description 'package name of project'
+    end
+
+    argument('target-path') do
+        description 'the path which store generated file'
+        cast :string
+        defaults "."
+    end
+
+    def target_path
+        File.expand_path(params['target-path'].value)
+    end
+
+    def run
+        if File.exist? target_path + "/" + ".project"
+            puts "Already contains project in #{target_path}."
+            exit
+        end
+       @project.package_name = params['package-name'].value 
+       FileUtils.mkdir_p target_path if !File.exist? target_path
+       Androidgen::Generator.new.generate( target_path, @project )
+    end
+end
