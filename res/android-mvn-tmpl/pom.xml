@@ -5,41 +5,41 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"
 >
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>info.thinkmore.yass</groupId>
-	<artifactId>Yass</artifactId>
+    <groupId><%= package_name %></groupId>
+    <artifactId><%= artifact_id %></artifactId>
 	<version>1.0-SNAPSHOT</version>
 	<packaging>apk</packaging>
-	<name>Yass</name>
+    <name><%= project_name %></name>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
 		<!-- Plugins -->
-		<android-maven-plugin.version>3.5.1</android-maven-plugin.version>
-		<maven-compiler-plugin.version>2.3.2</maven-compiler-plugin.version>
-		<api.platform>16</api.platform>
+        <android-maven-plugin.version><%= android_maven_plugin_version %></android-maven-plugin.version>
+        <maven-compiler-plugin.version><%= maven_compiler_plugin_version %></maven-compiler-plugin.version>
+        <api.platform><%= target_sdk_version %></api.platform>
 
 		<!-- Dependencies -->
-		<androidannotations.version>2.7.1</androidannotations.version>
-		<android.version>4.1.1.4</android.version>
+        <androidannotations.version><%= androidannotations_version %></androidannotations.version>
+        <android.version><%= android_version %></android.version>
 		<support-v4.version>r7</support-v4.version>
 	</properties>
 
 	<dependencies>
 		<dependency>
-			<groupId>com.google.android</groupId>
+            <groupId><%= android_sdk_groupid %></groupId>
 			<artifactId>android</artifactId>
 			<scope>provided</scope>
 			<version>${android.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>com.googlecode.androidannotations</groupId>
+            <groupId><%= androidannotations_groupid %></groupId>
 			<artifactId>androidannotations</artifactId>
 			<version>${androidannotations.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>com.googlecode.androidannotations</groupId>
+            <groupId><%= androidannotations_groupid %></groupId>
 			<artifactId>androidannotations-api</artifactId>
 			<version>${androidannotations.version}</version>
 		</dependency>
@@ -52,25 +52,60 @@
 
 	<build>
 		<plugins>
-			<plugin>
-				<groupId>com.jayway.maven.plugins.android.generation2</groupId>
-				<artifactId>android-maven-plugin</artifactId>
-				<version>${android-maven-plugin.version}</version>
-				<extensions>true</extensions>
-				<configuration>
-					<sdk>
-						<platform>${api.platform}</platform>
-					</sdk>
-				</configuration>
-			</plugin>
-			<plugin>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>${maven-compiler-plugin.version}</version>
-				<configuration>
-					<source>1.6</source>
-					<target>1.6</target>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
+            <plugin>
+                <groupId>com.jayway.maven.plugins.android.generation2</groupId>
+                <artifactId>android-maven-plugin</artifactId>
+                <version>${android-maven-plugin.version}</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <sdk>
+                        <platform>${api.platform}</platform>
+                    </sdk>
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven-compiler-plugin.version}</version>
+                <configuration>
+                    <source>1.6</source>
+                    <target>1.6</target>
+                </configuration>
+            </plugin>
+        </plugins>
+        <pluginManagement>
+            <plugins>
+                <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+                <plugin>
+                    <groupId>org.eclipse.m2e</groupId>
+                    <artifactId>lifecycle-mapping</artifactId>
+                    <version>1.0.0</version>
+                    <configuration>
+                        <lifecycleMappingMetadata>
+                            <pluginExecutions>
+                                <pluginExecution>
+                                    <pluginExecutionFilter>
+                                        <groupId>
+                                            com.jayway.maven.plugins.android.generation2
+                                        </groupId>
+                                        <artifactId>
+                                            android-maven-plugin
+                                        </artifactId>
+                                        <versionRange>
+                                            [3.8.2,)
+                                        </versionRange>
+                                        <goals>
+                                            <goal>consume-aar</goal>
+                                        </goals>
+                                    </pluginExecutionFilter>
+                                    <action>
+                                        <ignore></ignore>
+                                    </action>
+                                </pluginExecution>
+                            </pluginExecutions>
+                        </lifecycleMappingMetadata>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
 </project>

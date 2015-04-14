@@ -5,7 +5,7 @@ require 'erb'
 module Androidgen
     module ErbTmpl
         def erb( src, dest, project )
-            puts "render #{src} to #{dest}"
+            #puts "render #{src} to #{dest}"
             renderer = ERB.new( File.read(src) )
             FileUtils.mkdir_p File.dirname(dest) if !File.exist? File.dirname(dest)
             File.open( dest, "w" ) do |wr|
@@ -31,8 +31,58 @@ module Androidgen
         end
     end
 
+    class JavaTmpl
+        include ErbTmpl
+
+        def initialize(base_path, tmpl_path)
+            @base_path = base_path
+            @tmpl_path = tmpl_path
+        end
+
+        def generate(tmpl_base_path, generate_base_path, project)
+            puts @tmpl_path
+            erb( tmpl_base_path + "/" + @tmpl_path, 
+                generate_base_path + "/" + @base_path + "/" + project.package_name.gsub(/\./, "/" ) + "/" + File.basename(@tmpl_path),
+                project )
+        end
+    end
+
     class Project
-        attr_accessor :package_name, :activity_name, :target
+        attr_accessor :package_name, :target_sdk_version, :minimal_sdk_version, :androidannotations_version, :codemodel_version, :android_maven_plugin_version, :maven_compiler_plugin_version, :android_version, :android_sdk_groupid, :androidannotations_groupid
+
+        #todo:support-v4.version
+
+        def initialize
+            @android_sdk_groupid = "com.google.android"
+            @android_version = "4.1.1.4"
+            @target_sdk_version=16
+            @minimal_sdk_version=8
+            @androidannotations_groupid="org.androidannotations"
+            @androidannotations_version="3.2"
+            @android_maven_plugin_version="3.8.2"
+            @maven_compiler_plugin_version="3.3"
+            @codemodel_version="2.4.1"
+        end
+
+        def androidannotations_repo_path
+            @androidannotations_groupid.gsub( /\./, "/" )
+        end
+
+        def activity_name
+            "MainActivity"
+        end
+
+        def artifact_id
+            package_name.split('.').last
+        end
+
+        def app_name
+            package_name.split('.').last
+        end
+
+        def project_name
+            package_name.split('.').last
+        end
 
         def get_binding
             binding
@@ -48,19 +98,35 @@ module Androidgen
             end
         end
 
-        def self.rename_template(src,dest)
-            @@template_files << SimpleTmpl.new(src,dest)
+        def self.java_template(base_path, *args)
+            #if args.is_a? String
+                #args = [ args ]
+            #end
+
+            args.each do |file_path|
+                puts file_path
+                @@template_files << JavaTmpl.new(base_path, file_path)
+            end
         end
 
-        rename_template "project",".project"
+        def self.rename_template(hash_of_files)
+            hash_of_files.each_pair do |src,dest| 
+                @@template_files << SimpleTmpl.new(src,dest)
+            end
+        end
+
+        rename_template(   "project"=>".project", 
+                        "factorypath"=>".factorypath",
+                        "settings/org.eclipse.jdt.core.prefs"=>".settings/org.eclipse.jdt.core.prefs", 
+                        "settings/org.eclipse.jdt.apt.core.prefs"=>".settings/org.eclipse.jdt.apt.core.prefs" 
+                       )
+
+        java_template "src/main/java", "src/main/java/info/thinkmore/yass/MainActivity.java"
 
         simple_template(
             "project.properties",
-            "settings/org.eclipse.jdt.core.prefs",
-            "settings/org.eclipse.jdt.apt.core.prefs",
             "project.properties",
             "src/test/java/REMOVE.ME",
-            "src/main/java/info/thinkmore/yass/MainActivity.java",
             "pom.xml",
             "AndroidManifest.xml",
             "res/layout/activity_main.xml",

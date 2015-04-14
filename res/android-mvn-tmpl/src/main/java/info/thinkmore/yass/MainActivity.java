@@ -1,16 +1,13 @@
-
-package info.thinkmore.yass;
+package <%= package_name %>;
 
 import android.app.Activity;
 import android.view.Menu;
-import com.googlecode.androidannotations.annotations.AfterViews;
-import com.googlecode.androidannotations.annotations.EActivity;
+import <%= androidannotations_groupid %>.annotations.*;
 
 @EActivity(R.layout.activity_main)
 public class MainActivity
     extends Activity
 {
-
 
     @AfterViews
     void afterViews() {
