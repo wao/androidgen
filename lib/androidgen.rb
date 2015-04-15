@@ -71,6 +71,10 @@ module Androidgen
             @android_sdk_groupid = "android"
             @android_version = "5.0.1_r2"
             @target_sdk_version=21
+            #@android_version = "4.4.2_r4"
+            #@target_sdk_version=19
+            #@android_version = "4.3.1_r3"
+            #@target_sdk_version=18
             @minimal_sdk_version=8
             @androidannotations_groupid="org.androidannotations"
             @androidannotations_version="3.2"
@@ -167,11 +171,11 @@ module Androidgen
                        )
 
         java_template "src/main/java", "src/main/java/info/thinkmore/yass/MainActivity.java"
+        java_template "src/test/java", "src/test/java/MainActivityTest.java"
 
         simple_template(
             "project.properties",
             "project.properties",
-            "src/test/java/REMOVE.ME",
             "pom.xml",
             "AndroidManifest.xml",
             "res/layout/activity_main.xml",

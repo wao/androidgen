@@ -73,6 +73,22 @@
             <version>${support-v4.version}</version>
             <% end %>
         </dependency>
+        <dependency>
+            <groupId>org.robolectric</groupId>
+            <artifactId>robolectric</artifactId>
+            <% if !support_multiple_projects %>
+            <version>2.4</version>
+            <scope>test</scope>
+            <% end %>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <% if !support_multiple_projects %>
+            <version>4.11</version>
+            <scope>provided</scope>
+            <% end %>
+        </dependency>
     </dependencies>
 
     <build>
