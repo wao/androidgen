@@ -27,8 +27,17 @@
 		<support-v4.version>r7</support-v4.version>
 	</properties>
 
-	<dependencyManagement>
-		<dependencies>
+    <dependencies>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.16.4</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+
+    <dependencyManagement>
+        <dependencies>
             <dependency>
                 <groupId><%= android_sdk_groupid %></groupId>
                 <artifactId>android</artifactId>

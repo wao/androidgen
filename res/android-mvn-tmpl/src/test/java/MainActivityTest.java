@@ -9,7 +9,7 @@ import org.robolectric.annotation.Config;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(RobolectricTestRunner.class)
-@Config(manifest="./AndroidManifest.xml",emulateiSdk=18)
+@Config(manifest="./AndroidManifest.xml",emulateSdk=18)
 public class MainActivityTest {
 
   @org.junit.Test
