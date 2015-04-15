@@ -20,6 +20,6 @@ class TestAndroidgen < Test::Unit::TestCase
     def test_basic
         prj = Project.new
         prj.package_name = "com.info.testgen"
-        Generator.new.generate(TMP,prj)
+        Androidgen.generate_multiple_projects( TMP, prj )
     end
 end

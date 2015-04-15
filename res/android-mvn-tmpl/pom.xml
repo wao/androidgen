@@ -1,60 +1,86 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project
-	xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"
->
-	<modelVersion>4.0.0</modelVersion>
-    <groupId><%= package_name %></groupId>
+        xmlns="http://maven.apache.org/POM/4.0.0"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"
+        >
+    <modelVersion>4.0.0</modelVersion>
+
+    <% if support_multiple_projects %>
+    <parent>
+        <groupId><%= group_id %></groupId>
+        <artifactId><%= artifact_id %>-parent</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+    </parent>
+    <% end %>
+
+    <% if support_multiple_projects %>
+    <groupId><%= group_id %></groupId>
+    <% end %>
     <artifactId><%= artifact_id %></artifactId>
-	<version>1.0-SNAPSHOT</version>
-	<packaging>apk</packaging>
+    <% if support_multiple_projects %>
+    <version>0.0.1-SNAPSHOT</version>
+    <% end %>
+    <packaging>apk</packaging>
     <name><%= project_name %></name>
 
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-		<!-- Plugins -->
+
+    <% if !support_multiple_projects %>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <!-- Plugins -->
         <android-maven-plugin.version><%= android_maven_plugin_version %></android-maven-plugin.version>
         <maven-compiler-plugin.version><%= maven_compiler_plugin_version %></maven-compiler-plugin.version>
         <api.platform><%= target_sdk_version %></api.platform>
 
-		<!-- Dependencies -->
+        <!-- Dependencies -->
         <androidannotations.version><%= androidannotations_version %></androidannotations.version>
         <android.version><%= android_version %></android.version>
-		<support-v4.version>r7</support-v4.version>
-	</properties>
+        <support-v4.version>r7</support-v4.version>
+    </properties>
+    <% end %>
 
-	<dependencies>
-		<dependency>
+    <dependencies>
+        <dependency>
             <groupId><%= android_sdk_groupid %></groupId>
-			<artifactId>android</artifactId>
-			<scope>provided</scope>
-			<version>${android.version}</version>
-		</dependency>
-		<dependency>
+            <artifactId>android</artifactId>
+            <% if !support_multiple_projects %>
+            <scope>provided</scope>
+            <version>${android.version}</version>
+            <% end %>
+        </dependency>
+        <dependency>
             <groupId><%= androidannotations_groupid %></groupId>
-			<artifactId>androidannotations</artifactId>
-			<version>${androidannotations.version}</version>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
+            <artifactId>androidannotations</artifactId>
+            <% if !support_multiple_projects %>
+            <version>${androidannotations.version}</version>
+            <scope>provided</scope>
+            <% end %>
+        </dependency>
+        <dependency>
             <groupId><%= androidannotations_groupid %></groupId>
-			<artifactId>androidannotations-api</artifactId>
-			<version>${androidannotations.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.google.android</groupId>
-			<artifactId>support-v4</artifactId>
-			<version>${support-v4.version}</version>
-		</dependency>
-	</dependencies>
+            <artifactId>androidannotations-api</artifactId>
+            <% if !support_multiple_projects %>
+            <version>${androidannotations.version}</version>
+            <% end %>
+        </dependency>
+        <dependency>
+            <groupId>com.google.android</groupId>
+            <artifactId>support-v4</artifactId>
+            <% if !support_multiple_projects %>
+            <version>${support-v4.version}</version>
+            <% end %>
+        </dependency>
+    </dependencies>
 
-	<build>
-		<plugins>
+    <build>
+        <plugins>
             <plugin>
                 <groupId>com.jayway.maven.plugins.android.generation2</groupId>
                 <artifactId>android-maven-plugin</artifactId>
+                <% if !support_multiple_projects %>
                 <version>${android-maven-plugin.version}</version>
                 <extensions>true</extensions>
                 <configuration>
@@ -62,16 +88,20 @@
                         <platform>${api.platform}</platform>
                     </sdk>
                 </configuration>
+                <% end %>
             </plugin>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>${maven-compiler-plugin.version}</version>
+                <% if !support_multiple_projects %>
                 <configuration>
                     <source>1.6</source>
                     <target>1.6</target>
                 </configuration>
+                <% end %>
             </plugin>
         </plugins>
+        <% if !support_multiple_projects %>
         <pluginManagement>
             <plugins>
                 <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
@@ -107,5 +137,6 @@
                 </plugin>
             </plugins>
         </pluginManagement>
+        <% end %>
     </build>
 </project>

@@ -6,12 +6,16 @@ module Androidgen
     module ErbTmpl
         def erb( src, dest, project )
             #puts "render #{src} to #{dest}"
-            renderer = ERB.new( File.read(src) )
             FileUtils.mkdir_p File.dirname(dest) if !File.exist? File.dirname(dest)
             File.open( dest, "w" ) do |wr|
                 #puts renderer.result(project.get_binding) 
-                wr.write( renderer.result(project.get_binding) )
+                wr.write( render(src, project) )
             end
+        end
+
+        def render(src, project)
+            renderer = ERB.new( File.read(src) )
+            renderer.result(project.get_binding)
         end
     end
 
@@ -34,21 +38,32 @@ module Androidgen
     class JavaTmpl
         include ErbTmpl
 
-        def initialize(base_path, tmpl_path)
+        def initialize(base_path, tmpl_path, is_test=false)
             @base_path = base_path
             @tmpl_path = tmpl_path
+            @is_test = is_test
+        end
+
+        def package_name(project)
+            if @is_test
+                #puts "istest"
+                #puts @tmpl_path
+                project.package_name + ".test"
+            else
+                project.package_name
+            end
         end
 
         def generate(tmpl_base_path, generate_base_path, project)
-            puts @tmpl_path
             erb( tmpl_base_path + "/" + @tmpl_path, 
-                generate_base_path + "/" + @base_path + "/" + project.package_name.gsub(/\./, "/" ) + "/" + File.basename(@tmpl_path),
+                generate_base_path + "/" + @base_path + "/" + package_name(project).gsub(/\./, "/" ) + "/" + File.basename(@tmpl_path),
                 project )
+            #puts ">>>>>"
         end
     end
 
     class Project
-        attr_accessor :package_name, :target_sdk_version, :minimal_sdk_version, :androidannotations_version, :codemodel_version, :android_maven_plugin_version, :maven_compiler_plugin_version, :android_version, :android_sdk_groupid, :androidannotations_groupid
+        attr_accessor :package_name, :target_sdk_version, :minimal_sdk_version, :androidannotations_version, :codemodel_version, :android_maven_plugin_version, :maven_compiler_plugin_version, :android_version, :android_sdk_groupid, :androidannotations_groupid, :support_multiple_projects
 
         #todo:support-v4.version
 
@@ -62,6 +77,7 @@ module Androidgen
             @android_maven_plugin_version="3.8.2"
             @maven_compiler_plugin_version="3.3"
             @codemodel_version="2.4.1"
+            @support_multiple_projects = false
         end
 
         def androidannotations_repo_path
@@ -70,6 +86,10 @@ module Androidgen
 
         def activity_name
             "MainActivity"
+        end
+
+        def group_id
+            package_name.gsub(/\.[a-zA-Z0-9]*$/, "")
         end
 
         def artifact_id
@@ -89,31 +109,57 @@ module Androidgen
         end
     end
 
-    class Generator
-        @@template_files = []
+    class BaseGenerator
+        def self.template_files
+            @template_files ||= []
+        end
+
 
         def self.simple_template(*args)
             args.each do |file_path|
-                @@template_files << SimpleTmpl.new(file_path)
+                template_files << SimpleTmpl.new(file_path)
+            end
+        end
+
+        def self.java_source_template(base_path, is_test, args)
+            args.each do |file_path|
+                template_files << JavaTmpl.new(base_path, file_path, is_test)
             end
         end
 
         def self.java_template(base_path, *args)
-            #if args.is_a? String
-                #args = [ args ]
-            #end
+            java_source_template(base_path,false,args)
+        end
 
-            args.each do |file_path|
-                @@template_files << JavaTmpl.new(base_path, file_path)
-            end
+        def self.java_test_template(base_path, *args)
+            java_source_template(base_path,true,args)
         end
 
         def self.rename_template(hash_of_files)
             hash_of_files.each_pair do |src,dest| 
-                @@template_files << SimpleTmpl.new(src,dest)
+                template_files << SimpleTmpl.new(src,dest)
             end
         end
 
+        def self.tmpl_base_path(value=nil)
+            if value.nil?
+                @tmpl_base_path 
+            else
+                @tmpl_base_path = value
+            end
+        end
+
+        def generate(path,project)
+            # check project path
+            raise "Path #{path} doesn't exist!" unless File.exist? path
+
+            self.class.template_files.each do |tmpl|
+                tmpl.generate( self.class.tmpl_base_path, path, project )
+            end
+        end
+    end
+
+    class AndroidProjectGenerator < BaseGenerator
         rename_template(   "project"=>".project", 
                         "factorypath"=>".factorypath",
                         "settings/org.eclipse.jdt.core.prefs"=>".settings/org.eclipse.jdt.core.prefs", 
@@ -143,21 +189,57 @@ module Androidgen
             "res/menu/activity_main.xml",
             )
 
-        def initialize(tmpl_base_path=nil)
-            if tmpl_base_path.nil?
-                @tmpl_base_path = File.dirname(__FILE__) + "/../res/android-mvn-tmpl"
-            else
-                @tmpl_base_path = tmpl_base_path
-            end
-        end
+        tmpl_base_path File.dirname(__FILE__) + "/../res/android-mvn-tmpl"
+    end
 
-        def generate(path,project)
-            # check project path
-            raise "Path #{path} doesn't exist!" unless File.exist? path
+    class MavenParentProjectGenerator < BaseGenerator
+        tmpl_base_path File.dirname(__FILE__) + "/../res/android-parent-tmpl"
+        rename_template( { "settings/org.eclipse.m2e.core.prefs"=>".settings/org.eclipse.m2e.core.prefs",
+            "project"=>".project"
+        } )
 
-            @@template_files.each do |tmpl|
-                tmpl.generate( @tmpl_base_path, path, project )
-            end
-        end
+        simple_template "pom.xml"
+    end
+
+    class AndroidTestProjectGenerator < BaseGenerator
+        tmpl_base_path File.dirname(__FILE__) + "/../res/android-test-tmpl"
+        rename_template( {
+            "settings/org.eclipse.m2e.core.prefs"=>".settings/org.eclipse.m2e.core.prefs",
+            "settings/org.eclipse.jdt.core.prefs"=>".settings/org.eclipse.jdt.core.prefs",
+            "project"=>".project" 
+        })
+
+        simple_template(
+            "project.properties",
+            "pom.xml",
+            "AndroidManifest.xml",
+            "res/layout/main.xml",
+            "res/drawable-ldpi/icon.png",
+            "res/drawable-hdpi/icon.png",
+            "res/values/strings.xml",
+            "res/drawable-mdpi/icon.png",
+        )
+
+        java_test_template "src/main/java", "src/main/java/atest/atest/test/MainActivityTest.java"
+    end
+
+    def self.generate_project( target_path, project )
+        project.support_multiple_projects = false
+        FileUtils.mkdir_p target_path if !File.exist? target_path
+        Androidgen::Generator.new.generate( target_path, @project )
+    end
+
+    def self.generate_multiple_projects( target_path, project )
+        project.support_multiple_projects = true 
+        FileUtils.mkdir_p target_path if !File.exist? target_path
+        MavenParentProjectGenerator.new.generate(target_path,project)
+
+        android_path = target_path + "/" + project.artifact_id
+        FileUtils.mkdir_p android_path if !File.exists? android_path
+        AndroidProjectGenerator.new.generate(android_path,project)
+        
+        android_test_path = target_path + "/" + project.artifact_id + "-it"
+        FileUtils.mkdir_p android_test_path if !File.exist? android_test_path
+        AndroidTestProjectGenerator.new.generate(android_test_path,project)
     end
 end

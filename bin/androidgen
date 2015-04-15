@@ -36,7 +36,7 @@ Main do
             exit
         end
        @project.package_name = params['package-name'].value 
-       FileUtils.mkdir_p target_path if !File.exist? target_path
-       Androidgen::Generator.new.generate( target_path, @project )
+
+       Androidgen.generate_project( target_path, @project )
     end
 end
