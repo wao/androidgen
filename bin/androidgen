@@ -9,7 +9,6 @@ require 'androidgen'
 
 Main do
     def initialize
-        @project = Androidgen::Project.new
     end
 
     option('package-name', 'p') do
@@ -35,8 +34,9 @@ Main do
             puts "Already contains project in #{target_path}."
             exit
         end
-       @project.package_name = params['package-name'].value 
 
-       Androidgen.generate_project( target_path, @project )
+        @project = Androidgen::Project.new( params['package-name'].value )
+
+        Androidgen.generate_multiple_projects( target_path, @project )
     end
 end

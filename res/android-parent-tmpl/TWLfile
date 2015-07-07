@@ -1,0 +1,4 @@
+# vim: set ft=ruby
+ThinWestLake.project "<%= group_id %>", "<%= artifact_id %>", "0.0.1-SNAPSHOT" do
+    android
+end

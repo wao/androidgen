@@ -63,11 +63,17 @@ module Androidgen
     end
 
     class Project
-        attr_accessor :package_name, :target_sdk_version, :minimal_sdk_version, :androidannotations_version, :codemodel_version, :android_maven_plugin_version, :maven_compiler_plugin_version, :android_version, :android_sdk_groupid, :androidannotations_groupid, :support_multiple_projects
+        attr_reader :package_name, :target_sdk_version, :minimal_sdk_version, :androidannotations_version, :codemodel_version, :android_maven_plugin_version, :maven_compiler_plugin_version, :android_version, :android_sdk_groupid, :androidannotations_groupid, :group_id, :artifact_id
+        attr_accessor :support_multiple_projects
 
         #todo:support-v4.version
 
-        def initialize
+        def initialize(pname)
+            names = pname.split(".")
+            @artifact_id = names.pop
+            @group_id = names.join(".")
+            @package_name =  (names + @artifact_id.split("-")).join(".")
+
             @android_sdk_groupid = "android"
             @android_version = "5.0.1_r2"
             @target_sdk_version=21
@@ -90,14 +96,6 @@ module Androidgen
 
         def activity_name
             "MainActivity"
-        end
-
-        def group_id
-            package_name.gsub(/\.[a-zA-Z0-9]*$/, "")
-        end
-
-        def artifact_id
-            package_name.split('.').last
         end
 
         def app_name
@@ -165,7 +163,6 @@ module Androidgen
 
     class AndroidProjectGenerator < BaseGenerator
         rename_template(   "project"=>".project", 
-                        "factorypath"=>".factorypath",
                         "settings/org.eclipse.jdt.core.prefs"=>".settings/org.eclipse.jdt.core.prefs", 
                         "settings/org.eclipse.jdt.apt.core.prefs"=>".settings/org.eclipse.jdt.apt.core.prefs" 
                        )
@@ -174,9 +171,9 @@ module Androidgen
         java_template "src/test/java", "src/test/java/MainActivityTest.java"
 
         simple_template(
+            "proguard.cfg",
             "project.properties",
             "project.properties",
-            "pom.xml",
             "AndroidManifest.xml",
             "res/layout/activity_main.xml",
             "res/layout/fragment_sample.xml",
@@ -198,11 +195,13 @@ module Androidgen
 
     class MavenParentProjectGenerator < BaseGenerator
         tmpl_base_path File.dirname(__FILE__) + "/../res/android-parent-tmpl"
+
         rename_template( { "settings/org.eclipse.m2e.core.prefs"=>".settings/org.eclipse.m2e.core.prefs",
+            "gitignore"=>".gitignore",
             "project"=>".project"
         } )
 
-        simple_template "pom.xml"
+        simple_template "TWLfile"
     end
 
     class AndroidTestProjectGenerator < BaseGenerator
@@ -214,8 +213,8 @@ module Androidgen
         })
 
         simple_template(
+            "proguard.cfg",
             "project.properties",
-            "pom.xml",
             "AndroidManifest.xml",
             "res/layout/main.xml",
             "res/drawable-ldpi/icon.png",
@@ -224,7 +223,11 @@ module Androidgen
             "res/drawable-mdpi/icon.png",
         )
 
-        java_test_template "src/main/java", "src/main/java/atest/atest/test/MainActivityTest.java"
+        java_test_template( 
+           "src/main/java", 
+           "src/main/java/atest/atest/test/AllTests.java",
+           "src/main/java/atest/atest/test/MainActivityTest.java"
+      )
     end
 
     def self.generate_project( target_path, project )
